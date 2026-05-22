@@ -17,7 +17,7 @@ In this workshop, we will answer the question: How do specific leaf area, water 
 
 **Water treatment** is a categorical variable (i.e. a *factor*) with 2 levels: drought stressed (DS) and well watered (WW).  
 
-**Species** is a categorical variable (again, a *factor*) with 6 levels.  
+**Species** is a categorical variable (again, a *factor*) with 7 levels.  
 
 | Species name                 | Species code | Common name        |
 |------------------------------|--------------|--------------------|
@@ -44,8 +44,8 @@ library(ggeffects) # getting model predictions
 library(MuMIn) # model selection
 
 # read in your data here
-
-
+drought_exp <- read_xlsx(here("data", "Valliere_etal_EcoApps_Data.xlsx"),
+                         sheet = "First Harvest")
 
 ```
 
@@ -77,11 +77,11 @@ Data source: Valliere, Justin; Zhang, Jacqueline; Sharifi, M.; Rundel, Philip (2
 ```{r}
 #| label: data cleaning
 
-# 
-drought_exp_clean <- drought_exp 
-  # 
-  clean_names() 
-  # 
+# creating object from `drought_exp`
+drought_exp_clean <- drought_exp |>
+  # makes all data and column titles lowercase and adding underscores
+  clean_names() |>
+  # creating new column to store binomial species names
   mutate(species_name = case_match(
     species,
     "ENCCAL" ~ "Encelia californica", # bush sunflower
@@ -91,14 +91,14 @@ drought_exp_clean <- drought_exp
     "SALLEU" ~ "Salvia leucophylla", # purple sage
     "STIPUL" ~ "Stipa pulchra", # purple needlegrass
     "LOTSCO" ~ "Lotus scoparius" # deerweed
-  )) 
-  # 
+  )) |>
+  # creating new column with full name for treatment type
   mutate(water_treatment = case_match(
     water,
     "WW" ~ "Well watered",
     "DS" ~ "Drought stressed"
-  ))  
-  # 
+  ))  |>
+  # rearranging the level order for species
   mutate(species_name = as_factor(species_name),
          species_name = fct_relevel(species_name,
                                     "Lotus scoparius",
@@ -107,22 +107,33 @@ drought_exp_clean <- drought_exp
                                     "Encelia californica",
                                     "Stipa pulchra",
                                     "Eschscholzia californica",
-                                    "Grindelia camporum")) 
+                                    "Grindelia camporum")) |> 
+  # rearranging the level order for water treatments
   mutate(water_treatment = as_factor(water_treatment),
          water_treatment = fct_relevel(water_treatment,
                                        "Drought stressed",
-                                       "Well watered")) 
-  #
+                                       "Well watered")) |>
+  # selecting columns `species_name`, `water_treatment`, `sla`, and `total_g` for desired use
   select(species_name, water_treatment, sla, total_g)
 ```
 
 Insert code to double check the structure of the data frame here.  
+```{r}
+#| label: checking-structure
 
-
-
+str(drought_exp_clean)
+```
 
 Insert code to display 10 random rows from the data frame here.  
 
+```{r}
+#| label: ten-rows
+
+slice_sample(
+  drought_exp_clean, # data frame to display
+  n = 10 # selecting 10 rows from data frame
+)
+```
 
 
 
